@@ -1,0 +1,22 @@
+import requests
+import re
+import math
+
+j=1
+html=requests.get('http://app.mi.com/topList')
+#label=re.findall('<p class="app-desc">',html.text,re.S)
+label=re.findall('</h5>',html.text,re.S)
+pageAppNum=len(label)
+
+print(u'请输入app的数目：')
+appNum=int(input())
+pageNum=math.ceil(float(appNum)/pageAppNum)
+
+for i in range(1,int(pageNum+1)):
+    html=requests.get('http://app.mi.com/topList?page='+str(i))
+    title=re.findall('</a><h5><a href=".*?">(.*?)</a></h5><p class="app-desc">',html.text,re.S)
+    for each in title:
+        if j<=appNum:
+            print("排名第"+str(j)+"的是:"+each)
+        j=j+1
+        
