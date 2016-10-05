@@ -1,1 +1,49 @@
 
+import requests
+from lxml import etree
+session=requests.Session()
+for id in range(0,251,50):
+    URL='http://movie.douban.com/top250/?start='+str(id)
+
+    req=session.get(URL)
+    req.encoding='utf-8'
+    root=etree.HTML(req.content)
+    items=root.xpath('//ol/li/div[@class="item"]')
+    for item in items:
+        rank,name,alias,rating_num,quote,url="","","","","",""
+        try:
+            url=item.xpath('./div[@class="pic"]/a/@href')[0]
+            rank=item.xpath('./div[@class="pic"]/em/text()')[0]
+            title=item.xpath('./div[@class="info"]//a/span[@class="title"]/text()')
+            name=title[0].encode('gb2312','ignore').decode('gb2312')
+            alias=title[1].encode('gb2312','ignore').decode('gb2312') if len(title)==2 else ""
+            rating_num=item.xpath('.//div[@class="bd"]//span[@class="rating_num"]/text()')[0]
+            quote_tag=item.xpath('.//div[@class="bd"]//span[@class="inq"]')
+            if len(quote_tag) is not 0:
+                quote=quote_tag[0].text.encode('gb2312','ignore').decode('gb2312').replace('\xa0','')
+           # print('第'+rank+"名：")
+            #print('')
+            #print("豆瓣评分："+rating_num)
+            #print('')
+           # print("点评："+quote)
+            
+            #print(rank,rating_num,quote)
+            #print(name.encode('gb2312','ignore').decode('gb2312'),alias.encode('gb2312','ignore').decode('gb2312').replace('/',','))
+            print('第'+rank+"名："," 《"+name.encode('gb2312','ignore').decode('gb2312')+"》")
+            #print("《"+name.encode('gb2312','ignore').decode('gb2312')+"》")
+            print('')
+            print("豆瓣评分："+rating_num)
+            print('')
+            print('别名'+alias.encode('gb2312','ignore').decode('gb2312').replace('/','：'))
+            print('')
+            print("点评："+quote)
+            print('')
+            print('')
+            print('')
+            print('')
+            
+            #print(alias.encode('gb2312','ignore').decode('gb2312').replace('/',','))
+        except:
+            print('faild!')
+            pass
+        
