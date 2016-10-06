@@ -1,0 +1,52 @@
+import requests
+from lxml import etree
+session=requests.Session()
+for id in range(0,251,25):               #格式的特点：当start=0时，爬取1~25名，start=25爬取25~50名，以此类推，得到所有url
+    URL='http://movie.douban.com/top250/?start='+str(id)
+
+    req=session.get(URL)                         #获取网页源代码
+    req.encoding='utf-8'                         #网页编码方式，防止lxml将汉字编码出现/意外终止
+    root=etree.HTML(req.content)
+    items=root.xpath('//ol/li/div[@class="item"]')        #以文件搜索的方式定位节点（ol下的li下的div中的class=item的节点，[@]为过滤条件 电影的所有信息全部为该节点的子节点）
+    for item in items:
+        rank,name,alias,rating_num,quote,url="","","","","",""         #创建数据空字符串以待添加
+        try:
+            url=item.xpath('./div[@class="pic"]/a/@href')[0]
+            rank=item.xpath('./div[@class="pic"]/em/text()')[0]           #去掉零会打印“fail”（作为列表的零元素）
+            title=item.xpath('./div[@class="info"]//a/span[@class="title"]/text()')           #不能加[0]，会丢失别名，且电影名只显示第一个字
+            
+            other=item.xpath('./div[@class="info"]//a/span[@class="other"]/text()')[0]
+            others=other.encode('gb2312','ignore').decode('gb2312')
+            
+            name=title[0].encode('gb2312','ignore').decode('gb2312')
+            alias=title[1].encode('gb2312','ignore').decode('gb2312') if len(title)==2 else ""
+            rating_num=item.xpath('.//div[@class="bd"]//span[@class="rating_num"]/text()')[0]
+            quote_tag=item.xpath('.//div[@class="bd"]//span[@class="inq"]')
+            if len(quote_tag) is not 0:
+                quote=quote_tag[0].text.encode('gb2312','ignore').decode('gb2312').replace('\xa0','')
+           # print('第'+rank+"名：")
+            #print('')
+            #print("豆瓣评分："+rating_num)
+            #print('')
+           # print("点评："+quote)
+            
+            #print(rank,rating_num,quote)
+            #print(name.encode('gb2312','ignore').decode('gb2312'),alias.encode('gb2312','ignore').decode('gb2312').replace('/',','))
+            print('第'+rank+"名："," 《"+name.encode('gb2312','ignore').decode('gb2312')+"》")
+            #print("《"+name.encode('gb2312','ignore').decode('gb2312')+"》")
+            print('')
+            print("豆瓣评分："+rating_num)
+            print('')
+            print('外文名：'+alias.encode('gb2312','ignore').decode('gb2312').replace('/',''))
+            print('其他名称：'+others.encode('gb2312','ignore').decode('gb2312').replace('/',' '))
+            print('')
+            print("点评："+quote)
+            print('')
+            print('')
+            print('')
+            print('')
+            
+            #print(alias.encode('gb2312','ignore').decode('gb2312').replace('/',','))
+        except:
+            print('faild!')
+            pass
